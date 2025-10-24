@@ -1,8 +1,5 @@
 ---
 title: Toolbox
-resources:
-- src: youtube-thumbnail-extractor.html
-  title: YouTube Thumbnail Extractor
 ---
 
 ## Straightforward tools
@@ -11,7 +8,7 @@ Github: https://github.com/robertozoia/zoia-tools
 
 ### YouTube Thumbnail Extractor
 
-[YouTube Thumbnail Extractor](youtube-thumbnail-extractor.html)
+[YouTube Thumbnail Extractor](src/youtube-thumbnail-extractor/)
 
 Extracts default, high, medium, and max resolution thumbnails for any YouTube video.
 
