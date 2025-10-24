@@ -1,5 +1,8 @@
 ---
 title: Toolbox
+resources:
+- src: youtube-thumbnail-extractor.html
+  title: YouTube Thumbnail Extractor
 ---
 
 ## Straightforward tools
