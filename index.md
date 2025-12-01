@@ -12,6 +12,10 @@ Github: https://github.com/robertozoia/zoia-tools
 Extracts default, high, medium, and max resolution thumbnails for any YouTube video.
 
 
+### Amazon Book Cover Extractor
+
+[Amazon Book Cover Extractor](src/book-cover-downloader.html)
+Extracts book covers in different resolutions.
 
 ---
 

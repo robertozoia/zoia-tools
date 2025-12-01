@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Cover Extractor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #faf8f5;
+            --bg-secondary: #f0ebe4;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #8a8a8a;
+            --accent: #c45a3b;
+            --accent-hover: #a84830;
+            --border: #ddd5ca;
+            --shadow: rgba(26, 26, 26, 0.08);
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Source Sans 3', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent) 0%, #d97a5e 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(196, 90, 59, 0.3);
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            color: white;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            font-weight: 300;
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px var(--shadow);
+            border: 1px solid var(--border);
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .url-input {
+            flex: 1;
+            min-width: 280px;
+            padding: 16px 20px;
+            font-size: 1rem;
+            font-family: 'Source Sans 3', sans-serif;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(196, 90, 59, 0.1);
+        }
+
+        .url-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .extract-btn {
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .extract-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(196, 90, 59, 0.3);
+        }
+
+        .extract-btn:active {
+            transform: translateY(0);
+        }
+
+        .extract-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .error-message {
+            margin-top: 16px;
+            padding: 14px 18px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #b91c1c;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .results-section {
+            margin-top: 48px;
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .book-info {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 20px var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .book-info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .book-asin {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 1.25rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .covers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .cover-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 16px var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .cover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(26, 26, 26, 0.12);
+        }
+
+        .cover-image-wrapper {
+            position: relative;
+            background: var(--bg-secondary);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+        }
+
+        .cover-image {
+            max-width: 100%;
+            max-height: 240px;
+            object-fit: contain;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .cover-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            gap: 8px;
+        }
+
+        .cover-placeholder svg {
+            width: 48px;
+            height: 48px;
+            opacity: 0.4;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .cover-details {
+            padding: 20px;
+        }
+
+        .cover-size {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .cover-dimensions {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+        }
+
+        .download-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .download-btn.disabled {
+            background: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .tips-section {
+            margin-top: 48px;
+            padding: 24px 32px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .tips-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips-title svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent);
+        }
+
+        .tips-list {
+            list-style: none;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .tips-list li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .tips-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        footer {
+            margin-top: 80px;
+            text-align: center;
+            padding: 24px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 16px;
+            }
+
+            .input-section {
+                padding: 24px;
+            }
+
+            .url-input {
+                min-width: 100%;
+            }
+
+            .extract-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+            </div>
+            <h1>Book Cover Extractor</h1>
+            <p class="subtitle">Download high-resolution book covers from Amazon</p>
+        </header>
+
+        <section class="input-section">
+            <label class="input-label" for="amazon-url">Amazon Book URL</label>
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="amazon-url" 
+                    class="url-input" 
+                    placeholder="Paste Amazon book URL here..."
+                    autocomplete="off"
+                >
+                <button class="extract-btn" id="extract-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Extract Covers
+                </button>
+            </div>
+            <div class="error-message" id="error-message"></div>
+        </section>
+
+        <section class="results-section" id="results-section">
+            <div class="book-info">
+                <div class="book-info-label">Amazon ASIN</div>
+                <div class="book-asin" id="book-asin"></div>
+            </div>
+
+            <h2 class="section-title">Available Cover Sizes</h2>
+            
+            <div class="covers-grid" id="covers-grid"></div>
+        </section>
+
+        <section class="tips-section">
+            <div class="tips-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Tips
+            </div>
+            <ul class="tips-list">
+                <li>Works with most Amazon book product pages (.com, .co.uk, .de, etc.)</li>
+                <li>Right-click on an image and select "Save image as..." if download button doesn't work</li>
+                <li>Higher resolution images may not be available for all books</li>
+                <li>The ASIN is the unique identifier Amazon uses for products</li>
+            </ul>
+        </section>
+
+        <footer>
+            Built for book lovers everywhere
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // DOM Elements
+            const urlInput = document.getElementById('amazon-url');
+            const extractBtn = document.getElementById('extract-btn');
+            const errorMessage = document.getElementById('error-message');
+            const resultsSection = document.getElementById('results-section');
+            const bookAsinEl = document.getElementById('book-asin');
+            const coversGrid = document.getElementById('covers-grid');
+
+            // Amazon image size configurations using correct URL patterns
+            // Amazon uses LZZZZZZZ, MZZZZZZZ, TZZZZZZZ patterns and _SX/_SY transforms
+            const imageSizes = [
+                { 
+                    name: 'Extra Large', 
+                    description: 'Highest available resolution',
+                    urlBuilder: (asin) => [
+                        `https://images-na.ssl-images-amazon.com/images/P/${asin}.01.SCLZZZZZZZ.jpg`,
+                        `https://images-na.ssl-images-amazon.com/images/P/${asin}.01.SCRM.jpg`,
+                        `https://m.media-amazon.com/images/P/${asin}.01.SCLZZZZZZZ.jpg`
+                    ]
+                },
+                { 
+                    name: 'Large', 
+                    description: '~500px',
+                    urlBuilder: (asin) => [
+                        `https://images-na.ssl-images-amazon.com/images/P/${asin}.01.LZZZZZZZ.jpg`,
+                        `https://m.media-amazon.com/images/P/${asin}.01.LZZZZZZZ.jpg`
+                    ]
+                },
+                { 
+                    name: 'Medium', 
+                    description: '~160px',
+                    urlBuilder: (asin) => [
+                        `https://images-na.ssl-images-amazon.com/images/P/${asin}.01.MZZZZZZZ.jpg`,
+                        `https://m.media-amazon.com/images/P/${asin}.01.MZZZZZZZ.jpg`
+                    ]
+                },
+                { 
+                    name: 'Thumbnail', 
+                    description: '~75px',
+                    urlBuilder: (asin) => [
+                        `https://images-na.ssl-images-amazon.com/images/P/${asin}.01.TZZZZZZZ.jpg`,
+                        `https://m.media-amazon.com/images/P/${asin}.01.TZZZZZZZ.jpg`
+                    ]
+                }
+            ];
+
+            // Extract ASIN from Amazon URL
+            function extractASIN(url) {
+                // Multiple patterns to match ASIN in various Amazon URL formats
+                const patterns = [
+                    /\/dp\/([A-Z0-9]{10})/i,
+                    /\/gp\/product\/([A-Z0-9]{10})/i,
+                    /\/ASIN\/([A-Z0-9]{10})/i,
+                    /\/product\/([A-Z0-9]{10})/i,
+                    /amazon\.[a-z.]+\/.*\/([A-Z0-9]{10})(?:[/?]|$)/i
+                ];
+
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match && match[1]) {
+                        return match[1].toUpperCase();
+                    }
+                }
+
+                return null;
+            }
+
+            // Build Amazon image URLs
+            function buildImageURLs(asin) {
+                return imageSizes.map(size => ({
+                    name: size.name,
+                    description: size.description,
+                    urls: size.urlBuilder(asin)
+                }));
+            }
+
+            // Show error message
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add('visible');
+                resultsSection.classList.remove('visible');
+            }
+
+            // Hide error message
+            function hideError() {
+                errorMessage.classList.remove('visible');
+            }
+
+            // Create cover card HTML
+            function createCoverCard(sizeConfig, index) {
+                const card = document.createElement('div');
+                card.className = 'cover-card';
+                card.innerHTML = `
+                    <div class="cover-image-wrapper">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="cover-details">
+                        <div class="cover-size">${sizeConfig.name}</div>
+                        <div class="cover-dimensions">${sizeConfig.description}</div>
+                        <button class="download-btn disabled" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Loading...
+                        </button>
+                    </div>
+                `;
+
+                const wrapper = card.querySelector('.cover-image-wrapper');
+                const downloadBtn = card.querySelector('.download-btn');
+                
+                // Try loading from each URL pattern
+                tryLoadImage(sizeConfig.urls, 0, wrapper, downloadBtn, sizeConfig.name);
+
+                return card;
+            }
+
+            // Try loading image from URL list
+            function tryLoadImage(urls, index, wrapper, downloadBtn, sizeName) {
+                if (index >= urls.length) {
+                    // All URLs failed
+                    wrapper.innerHTML = `
+                        <div class="cover-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>Not available</span>
+                        </div>
+                    `;
+                    downloadBtn.textContent = 'Unavailable';
+                    downloadBtn.classList.add('disabled');
+                    downloadBtn.disabled = true;
+                    return;
+                }
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    // Check if it's a valid image (Amazon returns 1x1 pixel for missing images)
+                    if (img.naturalWidth <= 1 || img.naturalHeight <= 1) {
+                        tryLoadImage(urls, index + 1, wrapper, downloadBtn, sizeName);
+                        return;
+                    }
+
+                    wrapper.innerHTML = '';
+                    img.className = 'cover-image';
+                    img.alt = `Book cover - ${sizeName}`;
+                    wrapper.appendChild(img);
+
+                    // Update download button
+                    const imageUrl = urls[index];
+                    downloadBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download ${img.naturalWidth}×${img.naturalHeight}
+                    `;
+                    downloadBtn.classList.remove('disabled');
+                    downloadBtn.disabled = false;
+
+                    // Handle download click
+                    downloadBtn.onclick = function() {
+                        downloadImage(imageUrl, sizeName, img);
+                    };
+                };
+
+                img.onerror = function() {
+                    tryLoadImage(urls, index + 1, wrapper, downloadBtn, sizeName);
+                };
+
+                img.src = urls[index];
+            }
+
+            // Download image
+            function downloadImage(url, sizeName, imgElement) {
+                // Try to download using canvas (works if CORS allows)
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imgElement.naturalWidth;
+                    canvas.height = imgElement.naturalHeight;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(imgElement, 0, 0);
+                    
+                    canvas.toBlob(function(blob) {
+                        if (blob) {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = `book-cover-${sizeName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(link.href);
+                        } else {
+                            // Fallback: open in new tab
+                            window.open(url, '_blank');
+                        }
+                    }, 'image/jpeg', 0.95);
+                } catch (e) {
+                    // CORS blocked: open in new tab
+                    window.open(url, '_blank');
+                }
+            }
+
+            // Main extraction function
+            function extractCovers() {
+                const url = urlInput.value.trim();
+                
+                if (!url) {
+                    showError('Please enter an Amazon book URL');
+                    return;
+                }
+
+                const asin = extractASIN(url);
+                
+                if (!asin) {
+                    showError('Could not find a valid ASIN in this URL. Please make sure you\'re using an Amazon product page URL.');
+                    return;
+                }
+
+                hideError();
+                
+                // Update UI with extracted info
+                bookAsinEl.textContent = asin;
+                
+                // Clear previous results
+                coversGrid.innerHTML = '';
+                
+                // Build image URLs and create cards
+                const imageConfigs = buildImageURLs(asin);
+                
+                imageConfigs.forEach((config, index) => {
+                    const card = createCoverCard(config, index);
+                    coversGrid.appendChild(card);
+                });
+
+                // Show results
+                resultsSection.classList.add('visible');
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Event listeners
+            extractBtn.addEventListener('click', extractCovers);
+            
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    extractCovers();
+                }
+            });
+
+            // Auto-extract if URL is pasted
+            urlInput.addEventListener('paste', function() {
+                setTimeout(function() {
+                    if (urlInput.value.includes('amazon')) {
+                        extractCovers();
+                    }
+                }, 100);
+            });
+        })();
+    </script>
+</body>
+</html>
